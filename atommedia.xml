@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?rfc toc="yes"?>
+<?rfc tocompact="yes"?>
+<?rfc tocdepth="3"?>
+<?rfc tocindent="yes"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes"?>
+<?rfc comments="yes"?>
+<?rfc inline="yes"?>
+<?rfc compact="yes"?>
+<?rfc subcompact="no"?>
+<rfc category="exp" docName="atommedia-00" ipr="none">
+  <front>
+    <title abbrev="AtomMedia">Atom Media Extensions</title>
+
+    <author fullname="Martin Atkins" initials="M." surname="Atkins">
+      <organization>Six Apart Ltd</organization>
+    </author>
+
+    <date />
+
+    <abstract>
+      <t>This document presents an extension to the Atom Syndication Format
+      that defines how media objects such as photos and videos might be
+      represented in Atom and allows additional metadata to be published about
+      linked media representations.</t>
+    </abstract>
+
+    <note title="Requirements Language">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+      "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+      document are to be interpreted as described in <xref
+      target="RFC2119">RFC 2119</xref>.</t>
+    </note>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+      <t>This document presents an extension to <xref target="RFC4287">the
+      Atom Syndication Format</xref> that defines how media objects such as
+      photos and videos might be represented in Atom and allows additional
+      metadata to be published about linked media representations.</t>
+
+      <t>The capabilities described herein are an adaptation to Atom of some
+      of the core capabilities of <xref target="MediaRSS"></xref>.</t>
+
+      <t>This specification primarily considers the image, video and audio
+      media types. The extensions described herein MAY be used with other
+      media types in a way that is consistent with the definitions described
+      in this specification, but this specification does not consider the
+      processing expectations for such use.</t>
+    </section>
+
+    <section title="Notational Conventions">
+      <t>The XML Namespaces URI [W3C.REC-xml-names-19990114] for the XML
+      elements and attributes described in this specification is: <spanx
+      style="verb">http://example.com/to-be-confirmed</spanx>.</t>
+
+      <t>In this document, the namespace prefix "media:" is used for the above
+      Namespace URI. The namespace prefix "atom:" is used for the namespace
+      URI <spanx style="verb">http://www.w3.org/2005/Atom</spanx>. Note that
+      the choices of namespace prefix are arbitrary and not semantically
+      significant.</t>
+
+      <t>This specification uses a shorthand form of terms from the XML
+      Infoset [W3C.REC-xml-infoset-20040204]. The phrase "Information Item" is
+      omitted when naming Element and Attribute Information Items. Therefore,
+      when this specification uses the term "element," it is referring to an
+      Element Information Item in Infoset terms. Likewise, when this
+      specification uses the term "attribute," it is referring to an Attribute
+      Information Item.</t>
+
+      <t>This specification allows the use of IRIs [RFC3987]. Every URI
+      [RFC3986] is also an IRI, so a URI may be used wherever an IRI is named.
+      When an IRI that is not also a URI is given for dereferencing, it MUST
+      be mapped to a URI using the steps in Section 3.1 of [RFC3987]. When an
+      IRI is serving as an identifier, it MUST NOT be so mapped.</t>
+
+      <t>Some sections of this specification are illustrated with a non-
+      normative RELAX NG Compact schema [RELAXNG]. In those sections, this
+      specification uses the atomCommonAttributes, atomMediaType, and atomURI
+      patterns, defined in [RFC4287].</t>
+
+      <t>However, the text of this specification provides the sole definition
+      of conformance.</t>
+
+      <t>This specification uses "the Atom specification" to refer to <xref
+      target="RFC4287"></xref>.</t>
+    </section>
+
+    <section title="Media Objects as Atom Entries">
+      <t>The Atom Syndication Format defines a set of elements which are
+      designed primarily for use in describing weblog entries. When an Atom
+      entry is used instead to represent a media object, such as a photo,
+      video or audio recording, several additional items of information are
+      useful, including links to a variety of representations of the media
+      object as well as smaller "preview" representations that a user may view
+      to decide whether to retrieve a representation of the full media
+      object.</t>
+    </section>
+
+    <section title="Link Relations">
+      <t>This specification refines the existing "enclosure" and "alternate"
+      link relations, and adds an additional "preview" link relation. These
+      are described in the following sections.</t>
+
+      <section title="The &quot;enclosure&quot; link relation">
+        <t>The "enclosure" link relation is defined by section 4.2.7.2 of
+        <xref target="RFC4287"></xref>. This section describes additional
+        requirements for the use of this link relation in entries that
+        represent media objects.</t>
+
+        <t>When used in a media object entry, the enclosure link relation
+        indicates that the link is to a representation of the media object.
+        The <spanx style="verb">type</spanx> attribute indicates the media
+        type of the representation.</t>
+
+        <t>Links with this relationship SHOULD include any appropriate
+        extension attributes from <xref target="attributes"></xref> as a hint
+        to processors about which representations may be most appropriate for
+        their capabilities or circumstances or those of the user.</t>
+
+        <t>The <spanx style="verb">title</spanx> attribute MAY be used to
+        provide a human-readable label to distinguish one representation from
+        another. For example, <spanx style="verb">title="Full Size"</spanx>.
+        Including media type information in the <spanx style="verb">title</spanx>
+        attribute is however NOT RECOMMENDED, since this information can be
+        derived from the <spanx style="verb">type</spanx> attribute if
+        needed.</t>
+
+        <t>As advised by the Atom specification, the <spanx style="verb">length</spanx>
+        attribute SHOULD be used for link elements with this relation.</t>
+
+        <t>Because this link relation is defined by the Atom specification,
+        publishers should be aware that it may be processed by general Atom
+        processors that do not support the media extensions described in this
+        specification.</t>
+      </section>
+
+      <section title="The &quot;preview&quot; link relation">
+        <t>The "preview" link relation indicates that the link is to a
+        reduced-fidelity and/or reduced-content representation of the media
+        object that is intended to allow the user to sample the content before
+        retrieving a full representation. For example, if the media object is
+        an image a thumbnail of the photograph can be linked using this
+        relationship. If the media object is a video, the preview could be a
+        thumbnail image of a representative frame from the video, or a clip
+        showing a short segment of the full video. The <spanx style="verb">type</spanx>
+        attribute indicates the media type of the representation.</t>
+
+        <t>Resources linked with this relationship SHOULD be small in all
+        appropriate senses of the word. In all cases they SHOULD have a lower
+        filesize than the corresponding full representation. For preview
+        representations with a visible manifestation, such as images and
+        videos, the resource SHOULD have a small physical size in both
+        dimensions such that the preview could readily be displayed on-screen
+        with the previews from several other media items. For time-based
+        media, the preview resource SHOULD have a short duration. No hard
+        limits are placed on previews by this specification since it is
+        anticipated that future technological advances such as larger or
+        higher-resolution displays will lead to more more liberal definitions
+        of "small".</t>
+
+        <t>Links with this relationship SHOULD include any appropriate
+        extension attributes from <xref target="attributes"></xref> as a hint
+        to processors about which representations may be most appropriate for
+        their capabilities or circumstances or those of the user.</t>
+      </section>
+
+      <section title="The &quot;alternate&quot; link relation">
+        <t>When used in an Atom entry representing a media object, the
+        "alternate" link relation is interpreted as a link to a document that
+        itself contains the metadata about the media object and embeds or
+        links to one or more representations of the media object.</t>
+
+        <t>For example, if the <spanx style="verb">type</spanx> attribute
+        contains <spanx style="verb">text/html</spanx>, the target of the link
+        SHOULD be a HTML page that describes the media object, including
+        metadata such as the title and description, and embeds and/or links to
+        one or more representations of the object.</t>
+
+        <t>If the <spanx style="verb">type</spanx> attribute contains a media
+        type for embedded applets, such as <spanx style="verb">application/x-shockwave-flash</spanx>,
+        the linked object SHOULD be an applet that can display or plays back
+        the media object when executed. This applet MAY also make available
+        through its user interface metadata such as the title and description
+        for use when the applet is displayed alone without any other context.
+        The <spanx style="verb">media:width</spanx> and <spanx style="verb">media:height</spanx>
+        extension attributes described in <xref target="widthheight"></xref>
+        SHOULD be included and SHOULD indicate the applet's native or ideal
+        display size and aspect ratio.</t>
+
+        <t>Because this link relation is defined by the Atom specification,
+        publishers should be aware that it may be processed by general Atom
+        processors that do not support the media extensions described in this
+        specification.</t>
+      </section>
+    </section>
+
+    <section anchor="attributes" title="Link Extension Attributes">
+      <t>The following extension attributes apply to the <spanx style="verb">atom:link</spanx>
+      element. They provide a processing application with hints about the
+      nature of the linked resource such that the application can choose an
+      appropriate representation or representations from those available
+      without retrieving all of the resources for examination. These extension
+      attributes MUST NOT be assumed to provide completely accurate
+      information about the linked resource. The non-authoritative nature of
+      "external reference metadata", like the replies link attributes, is
+      discussed in detail in Section 3.3 of <xref target="TAG12"></xref>.</t>
+
+      <t>Implementors must be aware that although the Atom specification
+      explicitly allows the link element to contain arbitrary extensions, the
+      specification does not require that implementations support such
+      extensions. In particular, these extension attributes may be lost if a
+      feed is accessed through a feed re-publishing system that does not
+      support these extensions.</t>
+
+      <t>These extension attributes are intended to be used with links using
+      the <spanx style="verb">enclosure</spanx> and <spanx style="verb">preview</spanx>
+      link relations. They MAY be used with other link relations, but the
+      processing expectations for such usage is not considered by this
+      specification.</t>
+
+      <section anchor="widthheight"
+               title="The media:width and media:height Extension Attributes">
+        <t>For media types that have an on-screen visible representation, in
+        particular media types matching <spanx style="verb">image/*</spanx>
+        and <spanx style="verb">video/*</spanx>, the <spanx style="verb">media:width</spanx>
+        and <spanx style="verb">media:height</spanx> attributes specify the
+        physical dimensions of the linked representation in whole media
+        pixels.</t>
+
+        <t>When used with arbitrarily scalable media such as vector graphics,
+        these attributes specify an ideal or standard rendering size and
+        aspect ratio. The same representation MAY be linked several times with
+        different values of width and height.</t>
+      </section>
+
+      <section title="The media:duration Extension Attribute">
+        <t>For time-based media types, in particular media types matching
+        <spanx style="verb">video/*</spanx> and <spanx style="verb">audio/*</spanx>,
+        the media:duration attribute specifies the length of time that the
+        media object plays in whole seconds. If the exact duration is not a
+        whole number of seconds, publishers MUST round the value to an integer
+        in any way they deem appropriate.</t>
+
+        <t>For links with the relation <spanx style="verb">preview</spanx>,
+        this attribute (as well as the duration of the linked resource) SHOULD
+        be less than or equal to the duration of the corresponding full
+        representation.</t>
+
+        <t>If a given entry contains several links with the <spanx
+        style="verb">enclosure</spanx> relation that have a media:duration
+        attribute, the duration of all of the resources linked in this way
+        SHOULD have the same or at least a similar duration since they are
+        alternative representations of the same content.</t>
+      </section>
+    </section>
+
+    <section title="The media:description Extension Element">
+      <t>The <spanx style="verb">media:description</spanx> extension element
+      is used as a child of <spanx style="verb">atom:entry</spanx> and
+      contains a human-readable description, usually provided by the author of
+      the media object, of the content of the media object. It is distinct
+      from the <spanx style="verb">atom:content</spanx> element because the
+      latter contains more general content suitable for displaying this object
+      in a general Atom processor that does not support the media extensions
+      described in this specification.</t>
+
+      <t>The content model and processing requirements of this element are the
+      same as for atom:content, including attributes, as described in section
+      4.1.3 of the Atom specification.</t>
+
+      <t>An <spanx style="verb">atom:entry</spanx> element MUST NOT contain
+      more than one <spanx style="verb">media:description</spanx> element.</t>
+    </section>
+
+    <section title="Publishing Conventions For Specific Media Types">
+      <t>This section defines specific applications of the above mechanisms
+      for publishing the three different media types considered by this
+      specification.</t>
+
+      <section title="Photos and Other Images">
+        <t>When publishing images, all representations are usually in media
+        types that match <spanx style="verb">image/*</spanx>. While publishers
+        are free to provide representations in any number of formats, a
+        representation of type <spanx style="verb">image/jpeg</spanx>, <spanx
+        style="verb">image/png</spanx> or <spanx style="verb">image/gif</spanx>
+        SHOULD be provided. Processors SHOULD support at least these three
+        media types for both images and image previews.</t>
+
+        <t>Although both the "enclosure" and "preview" link relations can link
+        to representations of any size, publishers SHOULD use "enclosure" only
+        for representations that are of a size suitable for viewing alone
+        on-screen. Conversely, publishers SHOULD use "preview" only for
+        representations that are of a size suitable for displaying alongside
+        other image previews, such that the user may choose one image to view
+        in full.</t>
+
+        <t>At least one "enclosure" link SHOULD be provided. Including at
+        least one "preview" link is RECOMMENDED.</t>
+
+        <t>If the author has provided a title or short caption for the image,
+        it SHOULD be included in the <spanx style="verb">atom:title</spanx>
+        element. In the absense of such a title, publishers MAY substitute a
+        filename or other identifier that might allow a human to recognise the
+        image.</t>
+      </section>
+
+      <section title="Video">
+        <t>When publishing video, representations with various container
+        formats and codecs are generally published for maximum compatibility.
+        Publishers may choose also to provide audio-only versions of the
+        content. Finally, at least one image is often provided showing a
+        representative frame from the video.</t>
+
+        <t>When linking to the actual video content <spanx style="verb">rel="enclosure"</spanx>
+        MUST be used with a suitable media type. Including such a link is
+        RECOMMENDED. Implementers should be aware that for video content the
+        base media type often refers only to the container format and does not
+        describe the audio or video codecs used. Identifying the codecs used
+        within particular container formats is the responsibility of each
+        container's media type; it is out of scope for this specification.
+        Publishers SHOULD include the <spanx style="verb">media:duration</spanx>
+        extension attribute on each enclosure link, but the duration SHOULD be
+        the same or similar for all such links since they represent the same
+        content. Processors MAY display the duration from any included
+        enclosure link as a single display duration for all
+        representations.</t>
+
+        <t>Publishers SHOULD provide at least one thumbnail image of type
+        <spanx style="verb">image/jpeg</spanx>, <spanx style="verb">image/png</spanx>
+        or <spanx style="verb">image/gif</spanx> that is taken from a
+        representative frame of the video, and link to this image with <spanx
+        style="verb">rel="preview"</spanx>.</t>
+
+        <t>If an audio-only representation of the content is provided, and the
+        audio is considered to be a usable full representation of the content,
+        it MUST be included with <spanx style="verb">rel="enclosure"</spanx>
+        and a suitable media type. Publishers SHOULD include the <spanx
+        style="verb">media:duration</spanx> extension attribute on such links
+        and the duration SHOULD be the same or similar to the corresponding
+        video representation. If the audio is provided only as a preview of
+        the resource, <spanx style="verb">rel="preview"</spanx> MUST be
+        used.</t>
+
+        <t>If an applet such as a Flash player is available to play back the
+        video, it SHOULD be linked with <spanx style="verb">rel="alternate"</spanx>
+        and an appropriate media type. For a Flash-based player the
+        appropriate media type is <spanx style="verb">application/x-shockwave-flash</spanx>,
+        and <spanx style="verb">href</spanx> should contain a URL that could
+        be used in the <spanx style="verb">src</spanx> attribute of the HTML
+        <spanx style="verb">embed</spanx> element with this type. It is
+        acknowledged that in many cases more than just a URL is required to
+        successfully embed a movie player applet, but a mechanism for
+        obtaining the additional information is out of scope for this
+        specification. Publishers MAY include more complete embedding code as
+        part of the value of <spanx style="verb">atom:content</spanx>.</t>
+      </section>
+
+      <section title="Audio">
+        <t>When linking to the actual audio content <spanx style="verb">rel="enclosure"</spanx>
+        MUST be used with a suitable media type. Publishers SHOULD include the
+        <spanx style="verb">media:duration</spanx> extension attribute on each
+        enclosure link, but the duration SHOULD be the same or similar for all
+        such links since they represent the same content. Processors MAY
+        display the duration from any included enclosure link as a single
+        display duration for all representations.</t>
+
+        <t>If an applet such as a Flash player is available to play back the
+        audio, it SHOULD be linked with <spanx style="verb">rel="alternate"</spanx>
+        and an appropriate media type. For a Flash-based player the
+        appropriate media type is <spanx style="verb">application/x-shockwave-flash</spanx>,
+        and <spanx style="verb">href</spanx> should contain a URL that could
+        be used in the <spanx style="verb">src</spanx> attribute of the HTML
+        <spanx style="verb">embed</spanx> element with this type.</t>
+      </section>
+
+      <section title="Conventions for All Media Types">
+        <t>This section describes some conventions that are applicable to all
+        media types, in many cases relating to handling of media entries by
+        general Atom processors that do not support media extensions.</t>
+
+        <t>If the author has provided a textual description for the image, it
+        SHOULD be included in the <spanx style="verb">media:description</spanx>
+        extension element. Publishers SHOULD include an <spanx style="verb">atom:content</spanx>
+        element in each media object entry containing HTML that, when
+        displayed to a user, communicates all information necessary to
+        interact with the resource in conjunction with the values of other
+        elements defined by the Atom specification. This content will be used
+        by Atom processors that do not support media extensions.</t>
+
+        <t>Processors that <spanx>do</spanx> support media extensions MAY use
+        the information provided by the extension attributes and elements
+        defined in this specification in place of the value of <spanx
+        style="verb">atom:content</spanx>. This is because <spanx
+        style="verb">atom:content</spanx> will in most cases contain
+        information that duplicates that provided by the media extension
+        constructs. Processors MAY offer to users a way to access the fallback
+        content in preference to the information provided by the media
+        extension constructs.</t>
+
+        <t>Publishers SHOULD include in each media object entry an <spanx
+        style="verb">atom:link</spanx> element with the relation "alternate"
+        and the media type <spanx style="verb">text/html</spanx> whose target
+        is an HTML page that represents the media object, includes metadata
+        such as the title and description and embeds and/or links to one or
+        more representations of the media object for the benefit of a human
+        user.</t>
+      </section>
+    </section>
+
+    <section title="Security Considerations">
+      <t>As this specification defines an extension to the Atom Syndication
+      Format, it is subject to the same security considerations defined in
+      <xref target="RFC4287"></xref>.</t>
+
+      <t>[TODO: Write some more here.]</t>
+    </section>
+
+    <section title="IANA Considerations">
+      <t>[TODO: Write up a registration entry for the new "preview" link
+      relation.]</t>
+    </section>
+  </middle>
+
+  <back>
+    <references title="Normative References">
+      <reference anchor="RFC4287">
+        <front>
+          <title>The Atom Syndication Format</title>
+
+          <author>
+            <organization></organization>
+          </author>
+
+          <date />
+        </front>
+      </reference>
+
+      <reference anchor="RFC2119">
+        <front>
+          <title>RFC 2119</title>
+
+          <author>
+            <organization></organization>
+          </author>
+
+          <date />
+        </front>
+      </reference>
+
+      <reference anchor="RFC3987">
+        <front>
+          <title>Internationalized Resource Identifiers (IRIs)</title>
+
+          <author>
+            <organization></organization>
+          </author>
+
+          <date />
+        </front>
+      </reference>
+
+      <reference anchor="MediaRSS">
+        <front>
+          <title>MediaRSS</title>
+
+          <author>
+            <organization></organization>
+          </author>
+
+          <date />
+        </front>
+      </reference>
+
+      <reference anchor="TAG12">
+        <front>
+          <title>TAG Finding 12: Authoritative Metadata</title>
+
+          <author>
+            <organization></organization>
+          </author>
+
+          <date />
+        </front>
+      </reference>
+    </references>
+
+    <section title="Acknowledgements">
+      <t>...</t>
+    </section>
+
+    <section title="Examples">
+      <t>This appendix is non-normative.</t>
+
+      <t>The examples in this section are given as standalone entries without
+      a containing feed. It should be assumed that in each of these examples
+      the following XML namespace declarations are in scope: <spanx
+      style="verb">xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://example.com/to-be-confirmed"</spanx>.</t>
+
+      <section title="Photo Entry">
+        <figure>
+          <preamble>The following example shows an Atom entry representing a
+          photo</preamble>
+
+          <artwork><![CDATA[<entry>
+    <title>My Cats</title>
+    <link rel="alternate" type="text/html"
+          href="http://photopanic.example.com/cats.html"/>
+    <id>tag:photopanic.example.com,2008:cats</id>
+    <published>2008-12-13T23:09:02Z</published>
+    <updated>2008-12-13T23:09:02Z</updated>
+    <link rel="enclosure" type="image/jpeg"
+          href="http://photopanic.example.com/cats_m.jpg"
+          media:width="640" media:height="480"
+          title="Medium-size" length="53433" />
+    <link rel="enclosure" type="image/jpeg"
+          href="http://photopanic.example.com/cats_f.jpg"
+          media:width="1280" media:height="1024"
+          title="Full-size" length="4353433" />
+    <link rel="preview" type="image/jpeg"
+          href="http://photopanic.example.com/cats_t.jpg"
+          media:width="100" media:height="100"
+          length="2048" />
+    <media:description>My cats: Tom, Henrietta and Billy.</media:description>          
+
+    <content type="html">
+        &lt;p&gt;
+            &lt;a
+                href=&quot;http://photopanic.example.com/cats.html&quot;
+                title=&quot;My Cats&quot;&gt;
+                &lt;img
+                    src=&quot;http://photopanic.example.com/cats_m.jpg&quot;
+                    width=&quot;640&quot;
+                    height=&quot;480&quot;
+                /&gt;
+            &lt;/a&gt;
+        &lt;/p&gt;
+    </content>
+</entry>]]></artwork>
+        </figure>
+      </section>
+
+      <section title="Video Entry">
+        <figure>
+          <preamble>The following example shows an Atom entry representing a
+          video.</preamble>
+
+          <artwork><![CDATA[<entry>
+    <title>Duct Tape</title>
+    <link rel="alternate" type="text/html"
+          href="http://ubertube.example.com/ducttape.html"/>
+    <id>tag:ubertube.example.com,2005:ducttape</id>
+    <published>2008-12-13T23:09:02Z</published>
+    <updated>2008-12-13T23:09:02Z</updated>
+    <link rel="enclosure" type="video/mp4"
+          href="http://ubertube.example.com/ducttape.mp4"
+          media:width="640" media:height="480"
+          length="3635674756" media:duration="170" />
+    <link rel="enclosure" type="video/x-flv"
+          href="http://ubertube.example.com/ducttape.flv"
+          media:width="640" media:height="480"
+          length="153463454" media:duration="170" />
+    <link rel="preview" type="image/jpeg"
+          href="http://ubertube.example.com/ducttape_t.jpg"
+          media:width="100" media:height="100"
+          length="2032" />
+    <link rel="alternate" type="application/x-shockwave-flash"
+          href="http://ubertube.example.com/ducttape_e.swf"
+          media:width="640" media:height="480" />
+    <media:description>
+        Talking with Duct Tape over my mouth.
+    </media:description>          
+
+    <content type="html">
+        &lt;embed
+          src="http://ubertube.example.com/ducttape_e.swf"
+          type="application/x-shockwave-flash"
+          width="640" height="480"&gt;
+    </content>
+</entry>]]></artwork>
+
+          <postamble>The video itself is provided in two different formats. A
+          small preview image is provided. An applet to play back the video is
+          also provided and embedded in the HTML included in the content
+          element.</postamble>
+        </figure>
+      </section>
+    </section>
+  </back>
+</rfc>

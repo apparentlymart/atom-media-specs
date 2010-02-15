@@ -55,7 +55,7 @@
     <section title="Notational Conventions">
       <t>The XML Namespaces URI [W3C.REC-xml-names-19990114] for the XML
       elements and attributes described in this specification is: <spanx
-      style="verb">http://example.com/to-be-confirmed</spanx>.</t>
+      style="verb">http://purl.org/syndication/atommedia</spanx>.</t>
 
       <t>In this document, the namespace prefix "media:" is used for the above
       Namespace URI. The namespace prefix "atom:" is used for the namespace
